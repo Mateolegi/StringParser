@@ -1,18 +1,20 @@
-package com.mateolegi.StringParser.parser;
+package io.github.mateolegi.stringparser.parser;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * @author Mateo Leal
+ * @author <a href="https://mateolegi.github.io">Mateo Leal</a>
  */
 public class StringParser {
 
 	private String text = null;
-	private HashMap<String, String> variables = null;
+	private Map<String, String> variables = null;
 	
 	/** Initialize StringParser */
 	public StringParser() {
@@ -32,7 +34,7 @@ public class StringParser {
 	 * @param text text
 	 * @param variables variables set
 	 */
-	public StringParser(String text, HashMap<String, String> variables) {
+	public StringParser(String text, Map<String, String> variables) {
 		this.text = text;
 		this.variables = variables;
 	}
@@ -52,7 +54,7 @@ public class StringParser {
 	}
 
 	/** @return the variables */
-	public HashMap<String, String> getVariables() {
+	public Map<String, String> getVariables() {
 		return variables;
 	}
 
@@ -60,7 +62,7 @@ public class StringParser {
 	 * @param variables the variables to set
 	 * @return the instance
 	 */
-	public StringParser setVariables(HashMap<String, String> variables) {
+	public StringParser setVariables(Map<String, String> variables) {
 		this.variables = variables;
 		return this;
 	}
@@ -104,12 +106,12 @@ public class StringParser {
 	 * @return variables in the text
 	 */
 	private List<String> findVariables() {
-		List<String> variables = new ArrayList<>();
+		List<String> variablesList = new ArrayList<>();
 		String regex="(:)((?:[a-z][a-z0-9_]*))";
 	    Pattern p = Pattern.compile(regex, Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
 	    Matcher m = p.matcher(text);
-	    while (m.find()) variables.add(m.group(2));
-		return variables;
+	    while (m.find()) variablesList.add(m.group(2));
+		return variablesList;
 	}
 	
 	/**
@@ -140,6 +142,27 @@ public class StringParser {
 	public String parse(String text) {
 		setText(text);
 		replaceText(findVariables());
+		return text;
+	}
+	
+	public static String parse(String text, String... args) {
+		return replaceText(text, findVariablesWithInterrogativeSign(text), args);
+	}
+	
+	private static List<String> findVariablesWithInterrogativeSign(String text) {
+		List<String> variables = new ArrayList<>();
+		String regex="(\\?)(\\d+)";
+	    Pattern p = Pattern.compile(regex, Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
+	    Matcher m = p.matcher(text);
+	    while (m.find()) variables.add(m.group(2));
+		return variables;
+	}
+
+	private static String replaceText(String text, List<String> textVars, String[] args) {
+		List<String> variables = Arrays.asList(args);
+		for(String var : textVars) {
+			text = text.replaceAll("\\?" + var, variables.get(Integer.parseInt(var)-1));
+		}
 		return text;
 	}
 }
