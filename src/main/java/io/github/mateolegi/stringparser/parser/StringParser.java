@@ -9,11 +9,12 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
+ * 
  * @author <a href="https://mateolegi.github.io">Mateo Leal</a>
  */
 public class StringParser {
 
-	private String text = null;
+	private StringBuilder text = null;
 	private Map<String, String> variables = null;
 	
 	/** Initialize StringParser */
@@ -26,7 +27,7 @@ public class StringParser {
 	 * @param text text
 	 */
 	public StringParser(String text) {
-		this.text = text;
+		this.text = new StringBuilder(text);
 	}
 
 	/**
@@ -35,13 +36,13 @@ public class StringParser {
 	 * @param variables variables set
 	 */
 	public StringParser(String text, Map<String, String> variables) {
-		this.text = text;
+		this.text = new StringBuilder(text);
 		this.variables = variables;
 	}
 
 	/** @return the text */
 	public String getText() {
-		return text;
+		return text.toString();
 	}
 
 	/**
@@ -49,7 +50,7 @@ public class StringParser {
 	 * @return the instance
 	 */
 	public StringParser setText(String text) {
-		this.text = text;
+		this.text = new StringBuilder(text);
 		return this;
 	}
 
@@ -121,8 +122,17 @@ public class StringParser {
 	private void replaceText(List<String> textVars) {
 		for(String var : textVars) {
 			if(variables.containsKey(var)) 
-				text = text.replaceAll(":"+var, variables.get(var));
+				replaceAll(text, ":" + var, variables.get(var));
 		}
+	}
+
+	private static void replaceAll(StringBuilder sb, String regex, String replacement) {
+	    Matcher m = Pattern.compile(regex).matcher(sb);
+	    int start = 0;
+	    while (m.find(start)) {
+	        sb.replace(m.start(), m.end(), replacement);
+	        start = m.start() + replacement.length();
+	    }
 	}
 	
 	/**
@@ -131,7 +141,7 @@ public class StringParser {
 	 */
 	public String parse() {
 		replaceText(findVariables());
-		return text;
+		return text.toString();
 	}
 	
 	/**
@@ -144,7 +154,7 @@ public class StringParser {
 		replaceText(findVariables());
 		return text;
 	}
-	
+
 	public static String parse(String text, String... args) {
 		return replaceText(text, findVariablesWithInterrogativeSign(text), args);
 	}
@@ -159,9 +169,10 @@ public class StringParser {
 	}
 
 	private static String replaceText(String text, List<String> textVars, String[] args) {
+		StringBuilder sb = new StringBuilder(text);
 		List<String> variables = Arrays.asList(args);
 		for(String var : textVars) {
-			text = text.replaceAll("\\?" + var, variables.get(Integer.parseInt(var)-1));
+			replaceAll(sb, "\\?" + var, variables.get(Integer.parseInt(var)-1));
 		}
 		return text;
 	}
